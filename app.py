@@ -1,9 +1,29 @@
 
 from flask import Flask, request, jsonify
+import requests
 
 app = Flask(__name__)
 
+ACCESS_TOKEN = "EAAR2UzO6fHMBPJVNZAPcObZAgNn8oV1BsD9rkNnD36dQFCZBCCdnJEtUcNbsV4Dla0RHmqf1sDWDGYunwZBdiQaqwPH1oY2naaH7xjA8blCBle3dnJzE6DNwoxXZCbYRyvRGE7yRA5UnBBwzsSLUoiIG880boOEI9OKlhwQPn89V4EX8cIhnWGSUdDgAZCx0UZAbZAR0AX6t06wK2aZAETcfBF2iuZCzw5l4CadGBcNz33CvLHrMZBZAIOxBQuvwEAZDZD"
+PHONE_NUMBER_ID = "709386708930343"
 VERIFY_TOKEN = "mysecrettoken"
+
+def send_whatsapp_reply(to, text):
+    url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "messaging_product": "whatsapp",
+        "to": to,
+        "type": "text",
+        "text": {
+            "body": text
+        }
+    }
+    response = requests.post(url, headers=headers, json=data)
+    print("Send response:", response.status_code, response.text)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -17,8 +37,7 @@ def verify():
 
     if mode == "subscribe" and token == VERIFY_TOKEN:
         return challenge, 200
-    else:
-        return "Verification failed", 403
+    return "Verification failed", 403
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -44,7 +63,7 @@ def webhook():
             "4. Tuition Fees\n5. Scholarships\n\nবাংলায় উত্তর পেতে উপরের নাম্বার লিখুন।"
         )
 
-        print("Reply:", reply_text)
+        send_whatsapp_reply(from_number, reply_text)
 
     except Exception as e:
         print("Error:", e)
